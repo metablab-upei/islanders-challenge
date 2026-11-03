@@ -13,7 +13,7 @@
   --gold:#c9a84c; --gold2:#e8c96a; --gold3:#a07830; --goldfade:rgba(201,168,76,0.12);
   --white:#ffffff; --offwhite:#f0e8d0;
   --gray:#888; --gray2:#555; --gray3:#3a3a3a;
-  --shots:#4a9eff; --plyo:#ff5e5e; --skills:#50d890;
+  --shots:#4a9eff; --plyo:#ff5e5e; --skills:#50d890; --saves:#b47eff;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'DM Sans',sans-serif;background:var(--black);color:var(--white);min-height:100vh;overflow-x:hidden;}
@@ -35,13 +35,15 @@ header h1 em{color:var(--gold);font-style:normal;}
 .gold-line{width:80px;height:1.5px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:14px auto 0;}
 
 /* HERO LEADERBOARD STRIP */
-.hero-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px;}
-@media(max-width:580px){.hero-strip{grid-template-columns:1fr;}}
+.hero-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;}
+@media(max-width:700px){.hero-strip{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:420px){.hero-strip{grid-template-columns:1fr;}}
 .hero-card{background:var(--black2);border:1px solid var(--black4);border-radius:16px;padding:16px;position:relative;overflow:hidden;}
 .hero-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
 .hero-card.shots::after{background:var(--shots);}
 .hero-card.plyo::after{background:var(--plyo);}
 .hero-card.skills::after{background:var(--skills);}
+.hero-card.saves::after{background:var(--saves);}
 .hero-top{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
 .hero-icon{font-size:20px;}
 .hero-cat{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1px;color:var(--offwhite);}
@@ -56,10 +58,10 @@ header h1 em{color:var(--gold);font-style:normal;}
 .hr-top-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;}
 .hr-name{font-size:12px;font-weight:600;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .hr-val{font-size:11px;font-weight:700;white-space:nowrap;flex-shrink:0;margin-left:4px;}
-.hr-val.shots{color:var(--shots);} .hr-val.plyo{color:var(--plyo);} .hr-val.skills{color:var(--skills);}
+.hr-val.shots{color:var(--shots);} .hr-val.plyo{color:var(--plyo);} .hr-val.skills{color:var(--skills);} .hr-val.saves{color:var(--saves);}
 .hr-bar-bg{background:rgba(255,255,255,0.07);border-radius:3px;height:3px;}
 .hr-bar-fill{height:3px;border-radius:3px;transition:width 0.7s cubic-bezier(.4,0,.2,1);}
-.hr-bar-fill.shots{background:var(--shots);} .hr-bar-fill.plyo{background:var(--plyo);} .hr-bar-fill.skills{background:var(--skills);}
+.hr-bar-fill.shots{background:var(--shots);} .hr-bar-fill.plyo{background:var(--plyo);} .hr-bar-fill.skills{background:var(--skills);} .hr-bar-fill.saves{background:var(--saves);}
 .hero-empty{font-size:11px;color:var(--gray2);text-align:center;padding:10px 0;}
 
 /* MAIN PANEL */
@@ -89,14 +91,19 @@ input[type=number]{-moz-appearance:textfield;} input[type=number]::-webkit-inner
 .btn-ghost{background:var(--black3);color:var(--gray);border:1px solid var(--black4);} .btn-ghost:hover{color:var(--white);border-color:var(--gray2);}
 .btn-danger{background:rgba(255,60,60,0.1);color:#ff6060;border:1px solid rgba(255,60,60,0.15);}
 
+/* GOALIE BADGE */
+.goalie-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:var(--saves);background:rgba(180,126,255,0.1);border:1px solid rgba(180,126,255,0.3);border-radius:20px;padding:3px 10px;margin-left:6px;letter-spacing:0.3px;}
+
 /* LOG FORM */
 .log-box{background:var(--black3);border:1px solid var(--black4);border-radius:14px;padding:16px;margin-bottom:20px;}
 .log-top{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
 @media(max-width:440px){.log-top{grid-template-columns:1fr;}}
 .log-entries{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;align-items:end;}
+.log-entries.goalie{grid-template-columns:1fr 1fr 1fr auto;}
 @media(max-width:520px){.log-entries{grid-template-columns:1fr 1fr;}.log-entries .btn{grid-column:1/-1;}}
 .plyo-hint{font-size:11px;color:var(--gray2);margin-top:9px;line-height:1.6;}
 .plyo-hint b{color:var(--gray);}
+.goalie-note{font-size:11px;color:rgba(180,126,255,0.7);margin-top:7px;line-height:1.5;}
 
 /* LOG LIST */
 .log-list{max-height:210px;overflow-y:auto;}
@@ -105,12 +112,12 @@ input[type=number]{-moz-appearance:textfield;} input[type=number]::-webkit-inner
 .log-item:last-child{border-bottom:none;}
 @keyframes fu{from{opacity:0;transform:translateY(-3px);}to{opacity:1;transform:translateY(0);}}
 .log-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
-.log-dot.shots{background:var(--shots);} .log-dot.plyo{background:var(--plyo);} .log-dot.skills{background:var(--skills);}
+.log-dot.shots{background:var(--shots);} .log-dot.plyo{background:var(--plyo);} .log-dot.skills{background:var(--skills);} .log-dot.saves{background:var(--saves);}
 .log-dot.rst{background:var(--gray2);}
 .log-player{font-weight:600;color:var(--offwhite);min-width:76px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .log-detail{flex:1;color:var(--gray);font-size:12px;}
 .lv{font-weight:700;}
-.lv.shots{color:var(--shots);} .lv.plyo{color:var(--plyo);} .lv.skills{color:var(--skills);}
+.lv.shots{color:var(--shots);} .lv.plyo{color:var(--plyo);} .lv.skills{color:var(--skills);} .lv.saves{color:var(--saves);}
 .log-time{font-size:10px;color:var(--gray2);min-width:52px;text-align:right;}
 .empty-state{text-align:center;padding:24px;color:var(--gray2);font-size:13px;}
 .actions-row{display:flex;gap:8px;justify-content:flex-end;margin-top:10px;}
@@ -121,6 +128,7 @@ input[type=number]{-moz-appearance:textfield;} input[type=number]::-webkit-inner
 .lb-sw.shots.active{background:rgba(74,158,255,0.14);color:var(--shots);border-color:rgba(74,158,255,0.5);}
 .lb-sw.plyo.active{background:rgba(255,94,94,0.14);color:var(--plyo);border-color:rgba(255,94,94,0.5);}
 .lb-sw.skills.active{background:rgba(80,216,144,0.14);color:var(--skills);border-color:rgba(80,216,144,0.5);}
+.lb-sw.saves.active{background:rgba(180,126,255,0.14);color:var(--saves);border-color:rgba(180,126,255,0.5);}
 .lb-table{width:100%;border-collapse:collapse;}
 .lb-table th{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;color:var(--gray);text-align:left;padding:0 0 10px;border-bottom:1px solid var(--black4);}
 .lb-table th:last-child{text-align:right;}
@@ -135,9 +143,11 @@ td.lb-name{font-size:14px;font-weight:600;color:var(--white);}
 td.lb-bar{padding:0 12px;width:45%;}
 .lb-bar-bg{background:rgba(255,255,255,0.06);border-radius:3px;height:6px;}
 .lb-bar-fill{height:6px;border-radius:3px;transition:width 0.7s cubic-bezier(.4,0,.2,1);}
-.lb-bar-fill.shots{background:var(--shots);} .lb-bar-fill.plyo{background:var(--plyo);} .lb-bar-fill.skills{background:var(--skills);}
+.lb-bar-fill.shots{background:var(--shots);} .lb-bar-fill.plyo{background:var(--plyo);} .lb-bar-fill.skills{background:var(--skills);} .lb-bar-fill.saves{background:var(--saves);}
 td.lb-val{font-size:14px;font-weight:700;text-align:right;white-space:nowrap;}
-td.lb-val.shots{color:var(--shots);} td.lb-val.plyo{color:var(--plyo);} td.lb-val.skills{color:var(--skills);}
+td.lb-val.shots{color:var(--shots);} td.lb-val.plyo{color:var(--plyo);} td.lb-val.skills{color:var(--skills);} td.lb-val.saves{color:var(--saves);}
+.lb-section-head{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--gray);padding:14px 0 6px;border-top:1px solid var(--black4);margin-top:4px;}
+.lb-section-head:first-child{border-top:none;margin-top:0;padding-top:0;}
 
 /* CHARTS */
 .chart-switcher{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
@@ -150,12 +160,15 @@ td.lb-val.shots{color:var(--shots);} td.lb-val.plyo{color:var(--plyo);} td.lb-va
 .unlocked-badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--gold);background:var(--goldfade);border:1px solid var(--gold3);border-radius:20px;padding:4px 12px;margin-bottom:14px;}
 .ss-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;color:var(--gray);margin-bottom:10px;padding-bottom:7px;border-bottom:1px solid var(--black4);}
 .ss{margin-bottom:22px;}
-.roster-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-bottom:12px;}
-.r-card{background:var(--black3);border:1px solid var(--black4);border-radius:10px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;}
-.r-name{font-size:13px;font-weight:600;color:var(--offwhite);}
-.r-del{background:none;border:none;color:var(--gray2);font-size:16px;cursor:pointer;padding:0 2px;line-height:1;transition:color 0.15s;}
+.roster-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-bottom:12px;}
+.r-card{background:var(--black3);border:1px solid var(--black4);border-radius:10px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:6px;}
+.r-name{font-size:13px;font-weight:600;color:var(--offwhite);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.r-goalie-tag{font-size:10px;font-weight:700;color:var(--saves);background:rgba(180,126,255,0.1);border:1px solid rgba(180,126,255,0.25);border-radius:10px;padding:1px 6px;flex-shrink:0;}
+.r-del{background:none;border:none;color:var(--gray2);font-size:16px;cursor:pointer;padding:0 2px;line-height:1;transition:color 0.15s;flex-shrink:0;}
 .r-del:hover{color:#ff6060;}
-.add-row{display:grid;grid-template-columns:1fr auto;gap:8px;}
+.add-row{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:end;}
+.goalie-check{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--gray);white-space:nowrap;cursor:pointer;padding:10px 0;}
+.goalie-check input{width:auto;padding:0;cursor:pointer;}
 .pin-change-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
 @media(max-width:400px){.pin-change-grid{grid-template-columns:1fr;}}
 
@@ -201,6 +214,10 @@ td.lb-val.shots{color:var(--shots);} td.lb-val.plyo{color:var(--plyo);} td.lb-va
       <div class="hero-top"><span class="hero-icon">🏒</span><div><div class="hero-cat">Shooting</div><div class="hero-sub">Total shots on net</div></div></div>
       <div class="hero-rows" id="hero-shots"></div>
     </div>
+    <div class="hero-card saves">
+      <div class="hero-top"><span class="hero-icon">🧤</span><div><div class="hero-cat">Saves</div><div class="hero-sub">Goalie saves</div></div></div>
+      <div class="hero-rows" id="hero-saves"></div>
+    </div>
     <div class="hero-card plyo">
       <div class="hero-top"><span class="hero-icon">⚡</span><div><div class="hero-cat">Plyometrics</div><div class="hero-sub">Total reps</div></div></div>
       <div class="hero-rows" id="hero-plyo"></div>
@@ -235,25 +252,52 @@ td.lb-val.shots{color:var(--shots);} td.lb-val.plyo{color:var(--plyo);} td.lb-va
               <input type="date" id="input-date" />
             </div>
           </div>
-          <div class="log-entries">
-            <div>
-              <div class="field-label">Shots on net</div>
-              <input type="number" id="input-shots" min="0" max="999" placeholder="e.g. 50" />
+
+          <!-- Skater form -->
+          <div id="form-skater">
+            <div class="log-entries">
+              <div>
+                <div class="field-label">Shots on net</div>
+                <input type="number" id="input-shots" min="0" max="999" placeholder="e.g. 50" />
+              </div>
+              <div>
+                <div class="field-label">Plyo reps</div>
+                <input type="number" id="input-plyo" min="0" max="9999" placeholder="e.g. 60" />
+              </div>
+              <div>
+                <div class="field-label">Stickhandling (min)</div>
+                <input type="number" id="input-skills" min="0" max="999" placeholder="e.g. 15" step="0.5" />
+              </div>
+              <div style="padding-top:18px;">
+                <button class="btn btn-gold" onclick="logSession()">+ Log</button>
+              </div>
             </div>
-            <div>
-              <div class="field-label">Plyo reps</div>
-              <input type="number" id="input-plyo" min="0" max="9999" placeholder="e.g. 60" />
-            </div>
-            <div>
-              <div class="field-label">Stickhandling (min)</div>
-              <input type="number" id="input-skills" min="0" max="999" placeholder="e.g. 15" step="0.5" />
-            </div>
-            <div style="padding-top:18px;">
-              <button class="btn btn-gold" onclick="logSession()">+ Log</button>
-            </div>
+            <div class="plyo-hint"><b>Plyo reps include:</b> jump squats, lateral shuffles, broad jumps, box jumps, lateral bounds, skater hops, split squats (each leg), push-ups, sprints / shuttle runs, etc.</div>
           </div>
-          <div class="plyo-hint"><b>Plyo reps include:</b> jump squats, lateral shuffles, broad jumps, box jumps, lateral bounds, skater hops, split squats (each leg), push-ups, sprints / shuttle runs, etc.</div>
+
+          <!-- Goalie form -->
+          <div id="form-goalie" style="display:none;">
+            <div class="log-entries goalie">
+              <div>
+                <div class="field-label">Saves</div>
+                <input type="number" id="input-saves" min="0" max="999" placeholder="e.g. 30" />
+              </div>
+              <div>
+                <div class="field-label">Plyo reps</div>
+                <input type="number" id="input-plyo-g" min="0" max="9999" placeholder="e.g. 60" />
+              </div>
+              <div>
+                <div class="field-label">Stickhandling (min)</div>
+                <input type="number" id="input-skills-g" min="0" max="999" placeholder="e.g. 10" step="0.5" />
+              </div>
+              <div style="padding-top:18px;">
+                <button class="btn btn-gold" onclick="logSession()">+ Log</button>
+              </div>
+            </div>
+            <div class="goalie-note">🧤 <b>Goalie session:</b> log saves faced, plus plyo reps and stickhandling. Saves compete in the Goalie leaderboard.</div>
+          </div>
         </div>
+
         <div class="section-label">Recent entries</div>
         <div class="log-list" id="log-list"><div class="empty-state">No sessions logged yet.</div></div>
         <div class="actions-row">
@@ -265,7 +309,8 @@ td.lb-val.shots{color:var(--shots);} td.lb-val.plyo{color:var(--plyo);} td.lb-va
       <div class="tab-pane" id="pane-leaderboard">
         <div class="lb-switcher">
           <button class="lb-sw shots active" onclick="switchLb('shots',this)">🏒 Shots</button>
-          <button class="lb-sw plyo" onclick="switchLb('plyo',this)">⚡ Plyo Reps</button>
+          <button class="lb-sw saves" onclick="switchLb('saves',this)">🧤 Saves</button>
+          <button class="lb-sw plyo" onclick="switchLb('plyo',this)">⚡ Plyo</button>
           <button class="lb-sw skills" onclick="switchLb('skills',this)">🏑 Stickhandling</button>
         </div>
         <div id="lb-content"></div>
@@ -275,6 +320,7 @@ td.lb-val.shots{color:var(--shots);} td.lb-val.plyo{color:var(--plyo);} td.lb-va
       <div class="tab-pane" id="pane-charts">
         <div class="chart-switcher">
           <button class="lb-sw shots active" onclick="switchChart('shots',this)">🏒 Shots</button>
+          <button class="lb-sw saves" onclick="switchChart('saves',this)">🧤 Saves</button>
           <button class="lb-sw plyo" onclick="switchChart('plyo',this)">⚡ Plyo</button>
           <button class="lb-sw skills" onclick="switchChart('skills',this)">🏑 Stickhandling</button>
         </div>
@@ -304,8 +350,15 @@ td.lb-val.shots{color:var(--shots);} td.lb-val.plyo{color:var(--plyo);} td.lb-va
             <div class="ss-title">Roster</div>
             <div class="roster-grid" id="roster-grid"></div>
             <div class="add-row">
-              <input type="text" id="new-player" placeholder="Player name" maxlength="24" onkeydown="if(event.key==='Enter')addPlayer()" />
-              <button class="btn btn-gold btn-sm" onclick="addPlayer()">+ Add</button>
+              <div>
+                <div class="field-label">Player name</div>
+                <input type="text" id="new-player" placeholder="e.g. Smith" maxlength="24" onkeydown="if(event.key==='Enter')addPlayer()" />
+              </div>
+              <label class="goalie-check">
+                <input type="checkbox" id="new-is-goalie" />
+                🧤 Goalie
+              </label>
+              <div style="padding-top:18px;"><button class="btn btn-gold btn-sm" onclick="addPlayer()">+ Add</button></div>
             </div>
           </div>
 
@@ -363,7 +416,7 @@ let db=null, fbOn=false, syncT=null, coachOn=false;
 let lbCat='shots', chartCat='shots';
 let toastT;
 const MEDALS=['🥇','🥈','🥉'];
-const UNITS={shots:'shots',plyo:'reps',skills:'min'};
+const UNITS={shots:'shots',saves:'saves',plyo:'reps',skills:'min'};
 
 // ── FIREBASE ───────────────────────────────────────────────────────────────
 function initFB(){
@@ -407,28 +460,38 @@ function setSS(s){
   el.textContent=m[s]||m.local;
 }
 
-// ── TOTALS ─────────────────────────────────────────────────────────────────
+// ── HELPERS ────────────────────────────────────────────────────────────────
+function isGoalie(pid){
+  return !!(S.roster||[]).find(p=>p.id===pid&&p.goalie);
+}
 function lastReset(){ const r=S.resets||[]; return r.length?Math.max(...r):0; }
+
 function getTotals(){
   const lr=lastReset(), t={};
-  (S.roster||[]).forEach(p=>{t[p.id]={shots:0,plyo:0,skills:0};});
+  (S.roster||[]).forEach(p=>{t[p.id]={shots:0,saves:0,plyo:0,skills:0};});
   (S.log||[]).filter(e=>!e.reset&&e.ts>lr).forEach(e=>{
-    if(!t[e.pid]) t[e.pid]={shots:0,plyo:0,skills:0};
+    if(!t[e.pid]) t[e.pid]={shots:0,saves:0,plyo:0,skills:0};
     t[e.pid].shots +=(e.shots||0);
+    t[e.pid].saves +=(e.saves||0);
     t[e.pid].plyo  +=(e.plyo||0);
     t[e.pid].skills+=(e.skills||0);
   });
   return t;
 }
+
 function ranked(cat){
   const t=getTotals();
-  return (S.roster||[]).map(p=>({id:p.id,name:p.name,val:t[p.id]?.[cat]||0}))
+  // For shots: skaters only. For saves: goalies only. For plyo/skills: everyone.
+  let players=S.roster||[];
+  if(cat==='shots') players=players.filter(p=>!p.goalie);
+  if(cat==='saves') players=players.filter(p=>p.goalie);
+  return players.map(p=>({id:p.id,name:p.name,goalie:p.goalie,val:t[p.id]?.[cat]||0}))
     .sort((a,b)=>b.val-a.val);
 }
 
 // ── HERO ───────────────────────────────────────────────────────────────────
 function renderHero(){
-  ['shots','plyo','skills'].forEach(cat=>{
+  ['shots','saves','plyo','skills'].forEach(cat=>{
     const r=ranked(cat).filter(p=>p.val>0);
     const el=document.getElementById('hero-'+cat);
     if(!r.length){el.innerHTML='<div class="hero-empty">Log sessions to see rankings</div>';return;}
@@ -454,15 +517,40 @@ function renderHero(){
 function renderSel(){
   const sel=document.getElementById('sel-player');
   const prev=sel.value||localStorage.getItem('isl_last_player')||'';
-  sel.innerHTML=(S.roster||[]).length
-    ? S.roster.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')
-    : '<option value="">— No players yet —</option>';
+  const skaters=(S.roster||[]).filter(p=>!p.goalie);
+  const goalies=(S.roster||[]).filter(p=>p.goalie);
+  if(!(S.roster||[]).length){
+    sel.innerHTML='<option value="">— No players yet —</option>';
+  } else {
+    let html='';
+    if(skaters.length){
+      html+='<optgroup label="Skaters">';
+      html+=skaters.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+      html+='</optgroup>';
+    }
+    if(goalies.length){
+      html+='<optgroup label="Goalies 🧤">';
+      html+=goalies.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+      html+='</optgroup>';
+    }
+    sel.innerHTML=html;
+  }
   if(prev&&[...sel.options].find(o=>o.value===prev)) sel.value=prev;
-  else if(sel.options.length) sel.value=sel.options[0].value;
+  else if(sel.options.length) sel.value=sel.options[0]?.value||'';
+  updateLogForm();
 }
+
 function onPlayerChange(){
   const pid=document.getElementById('sel-player').value;
   if(pid) localStorage.setItem('isl_last_player',pid);
+  updateLogForm();
+}
+
+function updateLogForm(){
+  const pid=document.getElementById('sel-player').value;
+  const goalie=pid&&isGoalie(pid);
+  document.getElementById('form-skater').style.display=goalie?'none':'block';
+  document.getElementById('form-goalie').style.display=goalie?'block':'none';
 }
 
 // ── LOG ────────────────────────────────────────────────────────────────────
@@ -470,21 +558,30 @@ function logSession(){
   const pid=document.getElementById('sel-player').value;
   if(!pid){toast('No players on roster');return;}
   const p=(S.roster||[]).find(r=>r.id===pid);
-  const shots =parseFloat(document.getElementById('input-shots').value)||0;
-  const plyo  =parseFloat(document.getElementById('input-plyo').value)||0;
-  const skills=parseFloat(document.getElementById('input-skills').value)||0;
-  const date  =document.getElementById('input-date').value||new Date().toLocaleDateString('en-CA');
-  if(!shots&&!plyo&&!skills){toast('Enter at least one value');return;}
+  const goalie=p.goalie;
+  let shots=0,saves=0,plyo=0,skills=0;
+  if(goalie){
+    saves =parseFloat(document.getElementById('input-saves').value)||0;
+    plyo  =parseFloat(document.getElementById('input-plyo-g').value)||0;
+    skills=parseFloat(document.getElementById('input-skills-g').value)||0;
+  } else {
+    shots =parseFloat(document.getElementById('input-shots').value)||0;
+    plyo  =parseFloat(document.getElementById('input-plyo').value)||0;
+    skills=parseFloat(document.getElementById('input-skills').value)||0;
+  }
+  const date=document.getElementById('input-date').value||new Date().toLocaleDateString('en-CA');
+  if(!shots&&!saves&&!plyo&&!skills){toast('Enter at least one value');return;}
   localStorage.setItem('isl_last_player',pid);
   if(!S.log) S.log=[];
-  S.log.push({ts:Date.now(),pid,pname:p.name,shots,plyo,skills,date});
+  S.log.push({ts:Date.now(),pid,pname:p.name,goalie:!!goalie,shots,saves,plyo,skills,date});
   save();
-  document.getElementById('input-shots').value='';
-  document.getElementById('input-plyo').value='';
-  document.getElementById('input-skills').value='';
+  ['input-shots','input-saves','input-plyo','input-plyo-g','input-skills','input-skills-g'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
   updateAll();
   const parts=[];
   if(shots)  parts.push(`${shots} shots`);
+  if(saves)  parts.push(`${saves} saves`);
   if(plyo)   parts.push(`${plyo} plyo reps`);
   if(skills) parts.push(`${skills} min stickhandling`);
   toast(`${p.name}: ${parts.join(' · ')}`);
@@ -498,12 +595,13 @@ function renderLog(){
     if(e.reset) return `<div class="log-item"><div class="log-dot rst"></div><span class="log-detail" style="font-style:italic;color:var(--gray2);">Scores reset</span><span class="log-time">${new Date(e.ts).toLocaleDateString('en-CA',{month:'short',day:'numeric'})}</span></div>`;
     const parts=[];
     if(e.shots)  parts.push(`<span class="lv shots">${e.shots} shots</span>`);
+    if(e.saves)  parts.push(`<span class="lv saves">${e.saves} saves</span>`);
     if(e.plyo)   parts.push(`<span class="lv plyo">${e.plyo} reps</span>`);
     if(e.skills) parts.push(`<span class="lv skills">${e.skills} min</span>`);
-    const dc=e.shots?'shots':e.plyo?'plyo':'skills';
+    const dc=e.saves?'saves':e.shots?'shots':e.plyo?'plyo':'skills';
     return `<div class="log-item">
       <div class="log-dot ${dc}"></div>
-      <span class="log-player">${e.pname}</span>
+      <span class="log-player">${e.pname}${e.goalie?'<span style="font-size:10px;margin-left:4px;">🧤</span>':''}</span>
       <span class="log-detail">${parts.join(' &nbsp;·&nbsp; ')}</span>
       <span class="log-time">${e.date||''}</span>
     </div>`;
@@ -521,9 +619,15 @@ function renderLb(){
   const r=ranked(lbCat);
   const el=document.getElementById('lb-content');
   const hasData=r.some(p=>p.val>0);
-  if(!hasData){el.innerHTML='<div class="empty-state" style="color:var(--gray2);">No entries yet — log some sessions!</div>';return;}
+  const catLabel={shots:'Skaters — Shots on Net',saves:'Goalies — Saves',plyo:'All Players — Plyo Reps',skills:'All Players — Stickhandling'};
+  if(!hasData){
+    const msg=lbCat==='saves'?'No goalies on roster yet — add one in Coach settings.':'No entries yet — log some sessions!';
+    el.innerHTML=`<div class="empty-state" style="color:var(--gray2);">${msg}</div>`;return;
+  }
   const mx=r[0].val;
-  el.innerHTML=`<table class="lb-table">
+  el.innerHTML=`
+    <div class="lb-section-head">${catLabel[lbCat]||''}</div>
+    <table class="lb-table">
     <thead><tr><th style="width:32px">#</th><th style="width:24px"></th><th>Player</th><th style="width:44%"></th><th>${UNITS[lbCat]}</th></tr></thead>
     <tbody>${r.map((p,i)=>{
       const pc=mx>0?(p.val/mx)*100:0;
@@ -548,7 +652,7 @@ function switchChart(cat,btn){
 }
 function renderChart(){
   const cat=chartCat;
-  const COLS={shots:'#4a9eff',plyo:'#ff5e5e',skills:'#50d890'};
+  const COLS={shots:'#4a9eff',saves:'#b47eff',plyo:'#ff5e5e',skills:'#50d890'};
   const svg=d3.select('#main-chart'); svg.selectAll('*').remove();
   const W=document.getElementById('main-chart').parentElement.offsetWidth-36;
   const H=260, m={top:16,right:18,bottom:42,left:46};
@@ -557,9 +661,14 @@ function renderChart(){
   const g=svg.append('g').attr('transform',`translate(${m.left},${m.top})`);
 
   const lr=lastReset();
+  // Filter by relevant players for the category
+  let eligibleIds=new Set((S.roster||[]).map(p=>p.id));
+  if(cat==='shots') eligibleIds=new Set((S.roster||[]).filter(p=>!p.goalie).map(p=>p.id));
+  if(cat==='saves') eligibleIds=new Set((S.roster||[]).filter(p=>p.goalie).map(p=>p.id));
+
   const pData={};
-  (S.roster||[]).forEach(p=>{pData[p.id]={name:p.name,byDay:{}};});
-  (S.log||[]).filter(e=>!e.reset&&e.ts>lr&&(e[cat]||0)>0).forEach(e=>{
+  (S.roster||[]).filter(p=>eligibleIds.has(p.id)).forEach(p=>{pData[p.id]={name:p.name,byDay:{}};});
+  (S.log||[]).filter(e=>!e.reset&&e.ts>lr&&(e[cat]||0)>0&&eligibleIds.has(e.pid)).forEach(e=>{
     if(!pData[e.pid]) return;
     pData[e.pid].byDay[e.date]=(pData[e.pid].byDay[e.date]||0)+(e[cat]||0);
   });
@@ -618,12 +727,14 @@ function lock(){
 }
 function addPlayer(){
   const n=document.getElementById('new-player').value.trim();
+  const goalie=document.getElementById('new-is-goalie').checked;
   if(!n){toast('Enter a name');return;}
   if((S.roster||[]).find(p=>p.name.toLowerCase()===n.toLowerCase())){toast('Already on roster');return;}
   if(!S.roster) S.roster=[];
-  S.roster.push({id:n.toLowerCase().replace(/\s+/g,'_')+'_'+Date.now(),name:n});
+  S.roster.push({id:n.toLowerCase().replace(/\s+/g,'_')+'_'+Date.now(),name:n,goalie:goalie});
   document.getElementById('new-player').value='';
-  save(); renderRoster(); renderSel(); updateAll(); toast(n+' added');
+  document.getElementById('new-is-goalie').checked=false;
+  save(); renderRoster(); renderSel(); updateAll(); toast(n+(goalie?' (goalie)':'')+' added');
 }
 function removePlayer(id){
   const p=(S.roster||[]).find(r=>r.id===id);
@@ -634,7 +745,11 @@ function removePlayer(id){
 function renderRoster(){
   const g=document.getElementById('roster-grid');
   if(!(S.roster||[]).length){g.innerHTML='<div style="color:var(--gray2);font-size:13px;grid-column:1/-1;">No players yet.</div>';return;}
-  g.innerHTML=S.roster.map(p=>`<div class="r-card"><span class="r-name">${p.name}</span><button class="r-del" onclick="removePlayer('${p.id}')">✕</button></div>`).join('');
+  g.innerHTML=S.roster.map(p=>`<div class="r-card">
+    <span class="r-name">${p.name}</span>
+    ${p.goalie?'<span class="r-goalie-tag">G</span>':''}
+    <button class="r-del" onclick="removePlayer('${p.id}')">✕</button>
+  </div>`).join('');
 }
 function changePin(){
   const np=document.getElementById('new-pin').value;
@@ -661,8 +776,8 @@ function exportCSV(){
   const lr=lastReset();
   const log=(S.log||[]).filter(e=>!e.reset&&e.ts>lr);
   if(!log.length){toast('No data to export');return;}
-  const rows=[['Date','Player','Shots','Plyo Reps','Stickhandling (min)']];
-  log.forEach(e=>rows.push([e.date||'',e.pname,e.shots||0,e.plyo||0,e.skills||0]));
+  const rows=[['Date','Player','Position','Shots','Saves','Plyo Reps','Stickhandling (min)']];
+  log.forEach(e=>rows.push([e.date||'',e.pname,e.goalie?'Goalie':'Skater',e.shots||0,e.saves||0,e.plyo||0,e.skills||0]));
   const csv=rows.map(r=>r.map(v=>'"'+v+'"').join(',')).join('\n');
   const a=document.createElement('a'); a.href='data:text/csv,'+encodeURIComponent(csv);
   a.download='islanders_u13_training.csv'; a.click();
