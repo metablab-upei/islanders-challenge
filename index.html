@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Charlottetown Islanders U13 — Training Challenge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<style>
+:root {
+  --black:#0d0d0d; --black2:#141414; --black3:#1c1c1c; --black4:#272727; --black5:#333;
+  --gold:#c9a84c; --gold2:#e8c96a; --gold3:#a07830; --goldfade:rgba(201,168,76,0.12);
+  --white:#ffffff; --offwhite:#f0e8d0;
+  --gray:#888; --gray2:#555; --gray3:#3a3a3a;
+  --shots:#4a9eff; --plyo:#ff5e5e; --skills:#50d890;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--black);color:var(--white);min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background:
+  radial-gradient(ellipse at 50% -10%,rgba(201,168,76,0.07) 0%,transparent 60%),
+  repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(255,255,255,0.018) 40px),
+  repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(255,255,255,0.018) 40px);
+  pointer-events:none;z-index:0;}
+.app{position:relative;z-index:1;max-width:1040px;margin:0 auto;padding:0 16px 60px;}
+
+/* HEADER */
+header{text-align:center;padding:30px 0 22px;}
+.crest{display:inline-flex;align-items:center;justify-content:center;width:96px;height:96px;border-radius:50%;background:radial-gradient(circle,#242424,#111);border:2.5px solid var(--gold3);margin-bottom:12px;box-shadow:0 0 30px rgba(201,168,76,0.18),inset 0 0 20px rgba(0,0,0,0.4);}
+.crest svg{width:68px;height:68px;}
+header h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(28px,6vw,54px);letter-spacing:3px;line-height:1;color:var(--white);text-shadow:0 2px 12px rgba(0,0,0,0.5);}
+header h1 em{color:var(--gold);font-style:normal;}
+.header-sub{font-size:11px;color:var(--gray);letter-spacing:2px;text-transform:uppercase;margin-top:5px;}
+.sync-pill{display:inline-block;font-size:11px;font-weight:600;margin-top:7px;padding:3px 12px;border-radius:20px;background:var(--black3);border:1px solid var(--black4);color:var(--gray);letter-spacing:0.3px;}
+.gold-line{width:80px;height:1.5px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:14px auto 0;}
+
+/* HERO LEADERBOARD STRIP */
+.hero-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px;}
+@media(max-width:580px){.hero-strip{grid-template-columns:1fr;}}
+.hero-card{background:var(--black2);border:1px solid var(--black4);border-radius:16px;padding:16px;position:relative;overflow:hidden;}
+.hero-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.hero-card.shots::after{background:var(--shots);}
+.hero-card.plyo::after{background:var(--plyo);}
+.hero-card.skills::after{background:var(--skills);}
+.hero-top{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+.hero-icon{font-size:20px;}
+.hero-cat{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1px;color:var(--offwhite);}
+.hero-sub{font-size:10px;color:var(--gray);margin-top:0px;}
+.hero-rows{display:flex;flex-direction:column;gap:7px;}
+.hr-row{display:flex;align-items:center;gap:7px;}
+.hr-pos{font-family:'Bebas Neue',sans-serif;font-size:15px;width:16px;text-align:center;flex-shrink:0;}
+.hr-pos.r1{color:var(--gold);}
+.hr-pos.r2{color:#b0b8c8;}
+.hr-pos.r3{color:#cd7f32;}
+.hr-body{flex:1;min-width:0;}
+.hr-top-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;}
+.hr-name{font-size:12px;font-weight:600;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.hr-val{font-size:11px;font-weight:700;white-space:nowrap;flex-shrink:0;margin-left:4px;}
+.hr-val.shots{color:var(--shots);} .hr-val.plyo{color:var(--plyo);} .hr-val.skills{color:var(--skills);}
+.hr-bar-bg{background:rgba(255,255,255,0.07);border-radius:3px;height:3px;}
+.hr-bar-fill{height:3px;border-radius:3px;transition:width 0.7s cubic-bezier(.4,0,.2,1);}
+.hr-bar-fill.shots{background:var(--shots);} .hr-bar-fill.plyo{background:var(--plyo);} .hr-bar-fill.skills{background:var(--skills);}
+.hero-empty{font-size:11px;color:var(--gray2);text-align:center;padding:10px 0;}
+
+/* MAIN PANEL */
+.main-panel{background:var(--black2);border:1px solid var(--black4);border-radius:20px;overflow:hidden;}
+.tab-bar{display:flex;background:var(--black3);border-bottom:1px solid var(--black4);overflow-x:auto;scrollbar-width:none;}
+.tab-bar::-webkit-scrollbar{display:none;}
+.tab-btn{flex:1;min-width:76px;padding:13px 6px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;color:var(--gray);background:none;border:none;cursor:pointer;letter-spacing:0.5px;white-space:nowrap;border-bottom:3px solid transparent;transition:all 0.15s;text-transform:uppercase;}
+.tab-btn:hover{color:var(--offwhite);background:rgba(255,255,255,0.025);}
+.tab-btn.active{color:var(--gold);border-bottom-color:var(--gold);background:var(--goldfade);}
+.panel-content{padding:20px;}
+.tab-pane{display:none;} .tab-pane.active{display:block;}
+.section-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;color:var(--gray);margin-bottom:10px;}
+
+/* INPUTS */
+select,input[type=number],input[type=text],input[type=password],input[type=date]{
+  font-family:'DM Sans',sans-serif;font-size:14px;width:100%;padding:10px 14px;
+  border:1.5px solid var(--black4);border-radius:10px;background:var(--black3);color:var(--white);
+  -webkit-appearance:none;}
+select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;}
+select:focus,input:focus{outline:none;border-color:var(--gold3);}
+input[type=number]{-moz-appearance:textfield;} input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;}
+.field-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.7px;color:var(--gray);display:block;margin-bottom:5px;}
+.btn{font-family:'DM Sans',sans-serif;font-size:14px;padding:10px 18px;border:none;border-radius:10px;font-weight:600;cursor:pointer;transition:transform 0.1s;white-space:nowrap;}
+.btn:active{transform:scale(0.97);}
+.btn-gold{background:var(--gold);color:var(--black);} .btn-gold:hover{background:var(--gold2);}
+.btn-sm{font-size:12px;padding:7px 14px;}
+.btn-ghost{background:var(--black3);color:var(--gray);border:1px solid var(--black4);} .btn-ghost:hover{color:var(--white);border-color:var(--gray2);}
+.btn-danger{background:rgba(255,60,60,0.1);color:#ff6060;border:1px solid rgba(255,60,60,0.15);}
+
+/* LOG FORM */
+.log-box{background:var(--black3);border:1px solid var(--black4);border-radius:14px;padding:16px;margin-bottom:20px;}
+.log-top{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+@media(max-width:440px){.log-top{grid-template-columns:1fr;}}
+.log-entries{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;align-items:end;}
+@media(max-width:520px){.log-entries{grid-template-columns:1fr 1fr;}.log-entries .btn{grid-column:1/-1;}}
+.plyo-hint{font-size:11px;color:var(--gray2);margin-top:9px;line-height:1.6;}
+.plyo-hint b{color:var(--gray);}
+
+/* LOG LIST */
+.log-list{max-height:210px;overflow-y:auto;}
+.log-list::-webkit-scrollbar{width:3px;} .log-list::-webkit-scrollbar-thumb{background:var(--black4);border-radius:2px;}
+.log-item{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.035);font-size:13px;animation:fu 0.2s ease;}
+.log-item:last-child{border-bottom:none;}
+@keyframes fu{from{opacity:0;transform:translateY(-3px);}to{opacity:1;transform:translateY(0);}}
+.log-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.log-dot.shots{background:var(--shots);} .log-dot.plyo{background:var(--plyo);} .log-dot.skills{background:var(--skills);}
+.log-dot.rst{background:var(--gray2);}
+.log-player{font-weight:600;color:var(--offwhite);min-width:76px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.log-detail{flex:1;color:var(--gray);font-size:12px;}
+.lv{font-weight:700;}
+.lv.shots{color:var(--shots);} .lv.plyo{color:var(--plyo);} .lv.skills{color:var(--skills);}
+.log-time{font-size:10px;color:var(--gray2);min-width:52px;text-align:right;}
+.empty-state{text-align:center;padding:24px;color:var(--gray2);font-size:13px;}
+.actions-row{display:flex;gap:8px;justify-content:flex-end;margin-top:10px;}
+
+/* LEADERBOARD */
+.lb-switcher{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+.lb-sw{font-size:12px;font-weight:600;padding:6px 14px;border-radius:20px;border:1.5px solid var(--black4);background:var(--black3);color:var(--gray);cursor:pointer;transition:all 0.15s;text-transform:uppercase;letter-spacing:0.3px;}
+.lb-sw.shots.active{background:rgba(74,158,255,0.14);color:var(--shots);border-color:rgba(74,158,255,0.5);}
+.lb-sw.plyo.active{background:rgba(255,94,94,0.14);color:var(--plyo);border-color:rgba(255,94,94,0.5);}
+.lb-sw.skills.active{background:rgba(80,216,144,0.14);color:var(--skills);border-color:rgba(80,216,144,0.5);}
+.lb-table{width:100%;border-collapse:collapse;}
+.lb-table th{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;color:var(--gray);text-align:left;padding:0 0 10px;border-bottom:1px solid var(--black4);}
+.lb-table th:last-child{text-align:right;}
+.lb-tr{border-bottom:1px solid rgba(255,255,255,0.03);transition:background 0.1s;}
+.lb-tr:hover{background:rgba(255,255,255,0.02);}
+.lb-tr:last-child{border-bottom:none;}
+.lb-tr td{padding:9px 0;}
+td.lb-pos{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--gray2);width:32px;padding-right:4px;}
+td.lb-pos.p1{color:var(--gold);} td.lb-pos.p2{color:#b0b8c8;} td.lb-pos.p3{color:#cd7f32;}
+td.lb-medal{font-size:15px;width:24px;}
+td.lb-name{font-size:14px;font-weight:600;color:var(--white);}
+td.lb-bar{padding:0 12px;width:45%;}
+.lb-bar-bg{background:rgba(255,255,255,0.06);border-radius:3px;height:6px;}
+.lb-bar-fill{height:6px;border-radius:3px;transition:width 0.7s cubic-bezier(.4,0,.2,1);}
+.lb-bar-fill.shots{background:var(--shots);} .lb-bar-fill.plyo{background:var(--plyo);} .lb-bar-fill.skills{background:var(--skills);}
+td.lb-val{font-size:14px;font-weight:700;text-align:right;white-space:nowrap;}
+td.lb-val.shots{color:var(--shots);} td.lb-val.plyo{color:var(--plyo);} td.lb-val.skills{color:var(--skills);}
+
+/* CHARTS */
+.chart-switcher{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+
+/* SETTINGS */
+.coach-wrap{background:var(--black3);border:1px solid var(--black4);border-radius:14px;padding:16px;margin-bottom:18px;}
+.coach-wrap h3{font-size:13px;font-weight:600;color:var(--offwhite);margin-bottom:4px;}
+.coach-wrap p{font-size:11px;color:var(--gray);margin-bottom:12px;}
+.pin-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end;}
+.unlocked-badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--gold);background:var(--goldfade);border:1px solid var(--gold3);border-radius:20px;padding:4px 12px;margin-bottom:14px;}
+.ss-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;color:var(--gray);margin-bottom:10px;padding-bottom:7px;border-bottom:1px solid var(--black4);}
+.ss{margin-bottom:22px;}
+.roster-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-bottom:12px;}
+.r-card{background:var(--black3);border:1px solid var(--black4);border-radius:10px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;}
+.r-name{font-size:13px;font-weight:600;color:var(--offwhite);}
+.r-del{background:none;border:none;color:var(--gray2);font-size:16px;cursor:pointer;padding:0 2px;line-height:1;transition:color 0.15s;}
+.r-del:hover{color:#ff6060;}
+.add-row{display:grid;grid-template-columns:1fr auto;gap:8px;}
+.pin-change-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+@media(max-width:400px){.pin-change-grid{grid-template-columns:1fr;}}
+
+/* TOAST */
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--black3);color:var(--white);border:1px solid var(--black4);padding:10px 22px;border-radius:40px;font-size:13px;font-weight:500;z-index:2000;transition:transform 0.3s cubic-bezier(.4,0,.2,1),opacity 0.3s;opacity:0;pointer-events:none;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,0.6);}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:1999;opacity:0;pointer-events:none;transition:opacity 0.25s;}
+.overlay.show{opacity:1;pointer-events:all;}
+.modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0.88);background:var(--black2);border:2px solid var(--gold3);border-radius:20px;padding:28px 30px;text-align:center;z-index:2001;opacity:0;pointer-events:none;transition:all 0.25s cubic-bezier(.4,0,.2,1);max-width:300px;width:90%;}
+.modal.show{opacity:1;transform:translate(-50%,-50%) scale(1);pointer-events:all;}
+.modal-icon{font-size:48px;margin-bottom:8px;}
+.modal h2{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--gold);letter-spacing:1px;margin-bottom:4px;}
+.modal p{font-size:13px;color:var(--gray);line-height:1.5;margin-bottom:16px;}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <div class="crest">
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="46" fill="#111" stroke="#c9a84c" stroke-width="2.5"/>
+        <path d="M10 36 Q50 28 90 36 L90 40 Q50 32 10 40 Z" fill="#c9a84c"/>
+        <path d="M10 64 Q50 72 90 64 L90 60 Q50 68 10 60 Z" fill="#c9a84c"/>
+        <text x="50" y="32" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="8.5" font-weight="800" fill="#111" letter-spacing="2.5">HOCKEY</text>
+        <text x="50" y="55" text-anchor="middle" font-family="Georgia,serif" font-size="15" font-style="italic" fill="#c9a84c" letter-spacing="0.5">Islanders</text>
+        <text x="50" y="69" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="8.5" font-weight="800" fill="#111" letter-spacing="2.5">CLUB</text>
+        <line x1="28" y1="78" x2="66" y2="78" stroke="#c9a84c" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M28 78 L28 83 Q28 86 32 86 L36 86" stroke="#c9a84c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+    </div>
+    <h1>Charlottetown <em>Islanders</em></h1>
+    <div class="header-sub">U13 · Training Challenge · 2026/2027</div>
+    <div class="sync-pill" id="sync-status">⚪ Connecting…</div>
+    <div class="gold-line"></div>
+  </header>
+
+  <!-- HERO LEADERBOARD -->
+  <div class="hero-strip">
+    <div class="hero-card shots">
+      <div class="hero-top"><span class="hero-icon">🏒</span><div><div class="hero-cat">Shooting</div><div class="hero-sub">Total shots on net</div></div></div>
+      <div class="hero-rows" id="hero-shots"></div>
+    </div>
+    <div class="hero-card plyo">
+      <div class="hero-top"><span class="hero-icon">⚡</span><div><div class="hero-cat">Plyometrics</div><div class="hero-sub">Total reps</div></div></div>
+      <div class="hero-rows" id="hero-plyo"></div>
+    </div>
+    <div class="hero-card skills">
+      <div class="hero-top"><span class="hero-icon">🏑</span><div><div class="hero-cat">Stickhandling</div><div class="hero-sub">Total minutes</div></div></div>
+      <div class="hero-rows" id="hero-skills"></div>
+    </div>
+  </div>
+
+  <!-- MAIN PANEL -->
+  <div class="main-panel">
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="showTab('log',this)">Log Session</button>
+      <button class="tab-btn" onclick="showTab('leaderboard',this)">Leaderboard</button>
+      <button class="tab-btn" onclick="showTab('charts',this)">Charts</button>
+      <button class="tab-btn" onclick="showTab('settings',this)">⚙ Coach</button>
+    </div>
+    <div class="panel-content">
+
+      <!-- LOG -->
+      <div class="tab-pane active" id="pane-log">
+        <div class="section-label">Log your session</div>
+        <div class="log-box">
+          <div class="log-top">
+            <div>
+              <div class="field-label">Your name</div>
+              <select id="sel-player" onchange="onPlayerChange()"><option value="">— Select player —</option></select>
+            </div>
+            <div>
+              <div class="field-label">Date</div>
+              <input type="date" id="input-date" />
+            </div>
+          </div>
+          <div class="log-entries">
+            <div>
+              <div class="field-label">Shots on net</div>
+              <input type="number" id="input-shots" min="0" max="999" placeholder="e.g. 50" />
+            </div>
+            <div>
+              <div class="field-label">Plyo reps</div>
+              <input type="number" id="input-plyo" min="0" max="9999" placeholder="e.g. 60" />
+            </div>
+            <div>
+              <div class="field-label">Stickhandling (min)</div>
+              <input type="number" id="input-skills" min="0" max="999" placeholder="e.g. 15" step="0.5" />
+            </div>
+            <div style="padding-top:18px;">
+              <button class="btn btn-gold" onclick="logSession()">+ Log</button>
+            </div>
+          </div>
+          <div class="plyo-hint"><b>Plyo reps include:</b> jump squats, lateral shuffles, broad jumps, box jumps, lateral bounds, skater hops, split squats (each leg), push-ups, sprints / shuttle runs, etc.</div>
+        </div>
+        <div class="section-label">Recent entries</div>
+        <div class="log-list" id="log-list"><div class="empty-state">No sessions logged yet.</div></div>
+        <div class="actions-row">
+          <button class="btn btn-sm btn-ghost" onclick="exportCSV()">Export CSV</button>
+        </div>
+      </div>
+
+      <!-- LEADERBOARD -->
+      <div class="tab-pane" id="pane-leaderboard">
+        <div class="lb-switcher">
+          <button class="lb-sw shots active" onclick="switchLb('shots',this)">🏒 Shots</button>
+          <button class="lb-sw plyo" onclick="switchLb('plyo',this)">⚡ Plyo Reps</button>
+          <button class="lb-sw skills" onclick="switchLb('skills',this)">🏑 Stickhandling</button>
+        </div>
+        <div id="lb-content"></div>
+      </div>
+
+      <!-- CHARTS -->
+      <div class="tab-pane" id="pane-charts">
+        <div class="chart-switcher">
+          <button class="lb-sw shots active" onclick="switchChart('shots',this)">🏒 Shots</button>
+          <button class="lb-sw plyo" onclick="switchChart('plyo',this)">⚡ Plyo</button>
+          <button class="lb-sw skills" onclick="switchChart('skills',this)">🏑 Stickhandling</button>
+        </div>
+        <svg id="main-chart" height="260" style="width:100%;display:block;"></svg>
+      </div>
+
+      <!-- COACH / SETTINGS -->
+      <div class="tab-pane" id="pane-settings">
+        <div id="coach-auth">
+          <div class="coach-wrap">
+            <h3>🔒 Coach access required</h3>
+            <p>Enter the coach PIN to manage the roster and reset data.</p>
+            <div class="pin-row">
+              <div>
+                <div class="field-label">Coach PIN</div>
+                <input type="password" id="pin-input" placeholder="Enter PIN" maxlength="10" onkeydown="if(event.key==='Enter')unlock()" />
+              </div>
+              <div style="padding-top:18px;"><button class="btn btn-gold btn-sm" onclick="unlock()">Unlock</button></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="coach-panel" style="display:none;">
+          <div class="unlocked-badge">🏒 Coach mode active</div>
+
+          <div class="ss">
+            <div class="ss-title">Roster</div>
+            <div class="roster-grid" id="roster-grid"></div>
+            <div class="add-row">
+              <input type="text" id="new-player" placeholder="Player name" maxlength="24" onkeydown="if(event.key==='Enter')addPlayer()" />
+              <button class="btn btn-gold btn-sm" onclick="addPlayer()">+ Add</button>
+            </div>
+          </div>
+
+          <div class="ss">
+            <div class="ss-title">Data</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button class="btn btn-sm btn-ghost" onclick="exportCSV()">Export all CSV</button>
+              <button class="btn btn-sm btn-danger" onclick="confirmReset()">Reset all scores</button>
+            </div>
+            <p style="font-size:11px;color:var(--gray2);margin-top:7px;">Scores reset to zero — history always kept.</p>
+          </div>
+
+          <div class="ss">
+            <div class="ss-title">Change coach PIN</div>
+            <div class="pin-change-grid">
+              <div><div class="field-label">New PIN</div><input type="password" id="new-pin" placeholder="New PIN" maxlength="10" /></div>
+              <div><div class="field-label">Confirm</div><input type="password" id="confirm-pin" placeholder="Confirm" maxlength="10" /></div>
+            </div>
+            <button class="btn btn-sm btn-ghost" onclick="changePin()">Save PIN</button>
+          </div>
+
+          <button class="btn btn-sm btn-ghost" onclick="lock()">🔒 Lock coach mode</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="overlay" id="overlay" onclick="closeModal()"></div>
+<div class="modal" id="modal">
+  <div class="modal-icon" id="modal-icon">🏆</div>
+  <h2 id="modal-title"></h2>
+  <p id="modal-desc"></p>
+  <button class="btn btn-gold" onclick="closeModal()">Let's go!</button>
+</div>
+
+<script>
+// ── FIREBASE ───────────────────────────────────────────────────────────────
+const FB = {
+  apiKey:"AIzaSyCh4pLwxsgLsB4awlqYa7BJKfr4zVw78QI",
+  authDomain:"kidshockey-challenge.firebaseapp.com",
+  projectId:"kidshockey-challenge",
+  storageBucket:"kidshockey-challenge.firebasestorage.app",
+  messagingSenderId:"521904434762",
+  appId:"1:521904434762:web:55fed62099051a657f00b3",
+};
+const FS_DOC = "islanders/u13";
+
+// ── STATE ──────────────────────────────────────────────────────────────────
+const DEF = { roster:[], log:[], coachPin:"1234", resets:[] };
+let S = JSON.parse(JSON.stringify(DEF));
+let db=null, fbOn=false, syncT=null, coachOn=false;
+let lbCat='shots', chartCat='shots';
+let toastT;
+const MEDALS=['🥇','🥈','🥉'];
+const UNITS={shots:'shots',plyo:'reps',skills:'min'};
+
+// ── FIREBASE ───────────────────────────────────────────────────────────────
+function initFB(){
+  const s1=document.createElement('script');
+  s1.src='https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js';
+  s1.onload=()=>{
+    const s2=document.createElement('script');
+    s2.src='https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js';
+    s2.onload=()=>{
+      firebase.initializeApp(FB);
+      db=firebase.firestore(); fbOn=true;
+      setSS('connecting');
+      const [c,d]=FS_DOC.split('/');
+      db.collection(c).doc(d).onSnapshot(snap=>{
+        S=snap.exists ? {...DEF,...snap.data()} : JSON.parse(JSON.stringify(DEF));
+        if(!snap.exists) save();
+        setSS('synced'); updateAll();
+      },err=>{ console.error('Firestore:',err); setSS('error'); loadLocal(); });
+    };
+    document.head.appendChild(s2);
+  };
+  document.head.appendChild(s1);
+}
+function loadLocal(){
+  try{const s=localStorage.getItem('isl_v1');if(s)S={...DEF,...JSON.parse(s)};}catch(e){}
+  setSS('local'); updateAll();
+}
+function save(){
+  try{localStorage.setItem('isl_v1',JSON.stringify(S));}catch(e){}
+  if(fbOn&&db){
+    setSS('saving'); clearTimeout(syncT);
+    syncT=setTimeout(()=>{
+      const[c,d]=FS_DOC.split('/');
+      db.collection(c).doc(d).set(S).then(()=>setSS('synced')).catch(()=>setSS('error'));
+    },600);
+  }
+}
+function setSS(s){
+  const el=document.getElementById('sync-status'); if(!el)return;
+  const m={connecting:'🟡 Connecting…',saving:'🟡 Saving…',synced:'🟢 Live sync',error:'🔴 Sync error',local:'⚪ Local only'};
+  el.textContent=m[s]||m.local;
+}
+
+// ── TOTALS ─────────────────────────────────────────────────────────────────
+function lastReset(){ const r=S.resets||[]; return r.length?Math.max(...r):0; }
+function getTotals(){
+  const lr=lastReset(), t={};
+  (S.roster||[]).forEach(p=>{t[p.id]={shots:0,plyo:0,skills:0};});
+  (S.log||[]).filter(e=>!e.reset&&e.ts>lr).forEach(e=>{
+    if(!t[e.pid]) t[e.pid]={shots:0,plyo:0,skills:0};
+    t[e.pid].shots +=(e.shots||0);
+    t[e.pid].plyo  +=(e.plyo||0);
+    t[e.pid].skills+=(e.skills||0);
+  });
+  return t;
+}
+function ranked(cat){
+  const t=getTotals();
+  return (S.roster||[]).map(p=>({id:p.id,name:p.name,val:t[p.id]?.[cat]||0}))
+    .sort((a,b)=>b.val-a.val);
+}
+
+// ── HERO ───────────────────────────────────────────────────────────────────
+function renderHero(){
+  ['shots','plyo','skills'].forEach(cat=>{
+    const r=ranked(cat).filter(p=>p.val>0);
+    const el=document.getElementById('hero-'+cat);
+    if(!r.length){el.innerHTML='<div class="hero-empty">Log sessions to see rankings</div>';return;}
+    const mx=r[0].val;
+    el.innerHTML=r.slice(0,3).map((p,i)=>{
+      const pc=mx>0?(p.val/mx)*100:0;
+      const rc=['r1','r2','r3'][i]||'';
+      return `<div class="hr-row">
+        <div class="hr-pos ${rc}">${i+1}</div>
+        <div class="hr-body">
+          <div class="hr-top-row">
+            <span class="hr-name">${p.name}</span>
+            <span class="hr-val ${cat}">${p.val.toLocaleString()}</span>
+          </div>
+          <div class="hr-bar-bg"><div class="hr-bar-fill ${cat}" style="width:${pc}%"></div></div>
+        </div>
+      </div>`;
+    }).join('');
+  });
+}
+
+// ── PLAYER SELECT ──────────────────────────────────────────────────────────
+function renderSel(){
+  const sel=document.getElementById('sel-player');
+  const prev=sel.value||localStorage.getItem('isl_last_player')||'';
+  sel.innerHTML=(S.roster||[]).length
+    ? S.roster.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')
+    : '<option value="">— No players yet —</option>';
+  if(prev&&[...sel.options].find(o=>o.value===prev)) sel.value=prev;
+  else if(sel.options.length) sel.value=sel.options[0].value;
+}
+function onPlayerChange(){
+  const pid=document.getElementById('sel-player').value;
+  if(pid) localStorage.setItem('isl_last_player',pid);
+}
+
+// ── LOG ────────────────────────────────────────────────────────────────────
+function logSession(){
+  const pid=document.getElementById('sel-player').value;
+  if(!pid){toast('No players on roster');return;}
+  const p=(S.roster||[]).find(r=>r.id===pid);
+  const shots =parseFloat(document.getElementById('input-shots').value)||0;
+  const plyo  =parseFloat(document.getElementById('input-plyo').value)||0;
+  const skills=parseFloat(document.getElementById('input-skills').value)||0;
+  const date  =document.getElementById('input-date').value||new Date().toLocaleDateString('en-CA');
+  if(!shots&&!plyo&&!skills){toast('Enter at least one value');return;}
+  localStorage.setItem('isl_last_player',pid);
+  if(!S.log) S.log=[];
+  S.log.push({ts:Date.now(),pid,pname:p.name,shots,plyo,skills,date});
+  save();
+  document.getElementById('input-shots').value='';
+  document.getElementById('input-plyo').value='';
+  document.getElementById('input-skills').value='';
+  updateAll();
+  const parts=[];
+  if(shots)  parts.push(`${shots} shots`);
+  if(plyo)   parts.push(`${plyo} plyo reps`);
+  if(skills) parts.push(`${skills} min stickhandling`);
+  toast(`${p.name}: ${parts.join(' · ')}`);
+}
+
+function renderLog(){
+  const log=[...(S.log||[])].reverse().slice(0,80);
+  const el=document.getElementById('log-list');
+  if(!log.length){el.innerHTML='<div class="empty-state">No sessions logged yet.</div>';return;}
+  el.innerHTML=log.map(e=>{
+    if(e.reset) return `<div class="log-item"><div class="log-dot rst"></div><span class="log-detail" style="font-style:italic;color:var(--gray2);">Scores reset</span><span class="log-time">${new Date(e.ts).toLocaleDateString('en-CA',{month:'short',day:'numeric'})}</span></div>`;
+    const parts=[];
+    if(e.shots)  parts.push(`<span class="lv shots">${e.shots} shots</span>`);
+    if(e.plyo)   parts.push(`<span class="lv plyo">${e.plyo} reps</span>`);
+    if(e.skills) parts.push(`<span class="lv skills">${e.skills} min</span>`);
+    const dc=e.shots?'shots':e.plyo?'plyo':'skills';
+    return `<div class="log-item">
+      <div class="log-dot ${dc}"></div>
+      <span class="log-player">${e.pname}</span>
+      <span class="log-detail">${parts.join(' &nbsp;·&nbsp; ')}</span>
+      <span class="log-time">${e.date||''}</span>
+    </div>`;
+  }).join('');
+}
+
+// ── LEADERBOARD ────────────────────────────────────────────────────────────
+function switchLb(cat,btn){
+  lbCat=cat;
+  document.querySelectorAll('.lb-switcher .lb-sw').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderLb();
+}
+function renderLb(){
+  const r=ranked(lbCat);
+  const el=document.getElementById('lb-content');
+  const hasData=r.some(p=>p.val>0);
+  if(!hasData){el.innerHTML='<div class="empty-state" style="color:var(--gray2);">No entries yet — log some sessions!</div>';return;}
+  const mx=r[0].val;
+  el.innerHTML=`<table class="lb-table">
+    <thead><tr><th style="width:32px">#</th><th style="width:24px"></th><th>Player</th><th style="width:44%"></th><th>${UNITS[lbCat]}</th></tr></thead>
+    <tbody>${r.map((p,i)=>{
+      const pc=mx>0?(p.val/mx)*100:0;
+      const pc2=i<3?`p${i+1}`:'';
+      return `<tr class="lb-tr">
+        <td class="lb-pos ${pc2}">${i+1}</td>
+        <td class="lb-medal">${MEDALS[i]||''}</td>
+        <td class="lb-name">${p.name}</td>
+        <td class="lb-bar"><div class="lb-bar-bg"><div class="lb-bar-fill ${lbCat}" style="width:${pc}%"></div></div></td>
+        <td class="lb-val ${lbCat}">${p.val.toLocaleString()}</td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table>`;
+}
+
+// ── CHARTS ─────────────────────────────────────────────────────────────────
+function switchChart(cat,btn){
+  chartCat=cat;
+  document.querySelectorAll('.chart-switcher .lb-sw').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderChart();
+}
+function renderChart(){
+  const cat=chartCat;
+  const COLS={shots:'#4a9eff',plyo:'#ff5e5e',skills:'#50d890'};
+  const svg=d3.select('#main-chart'); svg.selectAll('*').remove();
+  const W=document.getElementById('main-chart').parentElement.offsetWidth-36;
+  const H=260, m={top:16,right:18,bottom:42,left:46};
+  const w=W-m.left-m.right, h=H-m.top-m.bottom;
+  svg.attr('width',W).attr('height',H);
+  const g=svg.append('g').attr('transform',`translate(${m.left},${m.top})`);
+
+  const lr=lastReset();
+  const pData={};
+  (S.roster||[]).forEach(p=>{pData[p.id]={name:p.name,byDay:{}};});
+  (S.log||[]).filter(e=>!e.reset&&e.ts>lr&&(e[cat]||0)>0).forEach(e=>{
+    if(!pData[e.pid]) return;
+    pData[e.pid].byDay[e.date]=(pData[e.pid].byDay[e.date]||0)+(e[cat]||0);
+  });
+  const series=Object.values(pData).map(p=>{
+    const days=Object.keys(p.byDay).sort(); let acc=0;
+    return {name:p.name, data:days.map(d=>{acc+=p.byDay[d];return{date:new Date(d),v:acc};})};
+  }).filter(s=>s.data.length>0);
+
+  if(!series.length){
+    g.append('text').attr('x',w/2).attr('y',h/2).attr('text-anchor','middle').attr('fill','#555').attr('font-size',13).text('Log sessions to see charts');
+    return;
+  }
+  const all=series.flatMap(s=>s.data);
+  const x=d3.scaleTime().domain(d3.extent(all,d=>d.date)).range([0,w]);
+  const y=d3.scaleLinear().domain([0,(d3.max(all,d=>d.v)||10)*1.1]).range([h,0]);
+
+  g.append('g').call(d3.axisLeft(y).ticks(5).tickSize(-w).tickFormat(d3.format(',.0f')))
+    .call(a=>a.select('.domain').remove())
+    .call(a=>a.selectAll('.tick line').attr('stroke','rgba(255,255,255,0.04)'))
+    .call(a=>a.selectAll('.tick text').attr('fill','#666').attr('font-size',10));
+  g.append('g').attr('transform',`translate(0,${h})`).call(d3.axisBottom(x).ticks(5).tickFormat(d3.timeFormat('%b %d')))
+    .call(a=>a.select('.domain').remove())
+    .call(a=>a.selectAll('.tick line').remove())
+    .call(a=>a.selectAll('.tick text').attr('fill','#666').attr('font-size',10));
+
+  const line=d3.line().x(d=>x(d.date)).y(d=>y(d.v)).curve(d3.curveMonotoneX);
+  const pal=d3.schemeTableau10;
+  series.forEach((s,i)=>{
+    const c=i===0?COLS[cat]:pal[i%pal.length];
+    if(s.data.length>1) g.append('path').datum(s.data).attr('fill','none').attr('stroke',c).attr('stroke-width',2).attr('d',line).attr('opacity',0.85);
+    g.selectAll(null).data(s.data).enter().append('circle').attr('cx',d=>x(d.date)).attr('cy',d=>y(d.v)).attr('r',3).attr('fill',c);
+  });
+  const leg=svg.append('g').attr('transform',`translate(${m.left+4},${m.top})`);
+  series.slice(0,10).forEach((s,i)=>{
+    const c=i===0?COLS[cat]:pal[i%pal.length];
+    leg.append('circle').attr('cx',5).attr('cy',5+i*13).attr('r',3.5).attr('fill',c);
+    leg.append('text').attr('x',12).attr('y',9+i*13).attr('fill','#777').attr('font-size',10).text(s.name);
+  });
+}
+
+// ── COACH / ROSTER ─────────────────────────────────────────────────────────
+function unlock(){
+  const pin=document.getElementById('pin-input').value;
+  if(pin===(S.coachPin||'1234')){
+    coachOn=true;
+    document.getElementById('coach-auth').style.display='none';
+    document.getElementById('coach-panel').style.display='block';
+    document.getElementById('pin-input').value='';
+    renderRoster(); toast('Coach mode unlocked');
+  } else { toast('Wrong PIN'); }
+}
+function lock(){
+  coachOn=false;
+  document.getElementById('coach-auth').style.display='block';
+  document.getElementById('coach-panel').style.display='none';
+}
+function addPlayer(){
+  const n=document.getElementById('new-player').value.trim();
+  if(!n){toast('Enter a name');return;}
+  if((S.roster||[]).find(p=>p.name.toLowerCase()===n.toLowerCase())){toast('Already on roster');return;}
+  if(!S.roster) S.roster=[];
+  S.roster.push({id:n.toLowerCase().replace(/\s+/g,'_')+'_'+Date.now(),name:n});
+  document.getElementById('new-player').value='';
+  save(); renderRoster(); renderSel(); updateAll(); toast(n+' added');
+}
+function removePlayer(id){
+  const p=(S.roster||[]).find(r=>r.id===id);
+  if(!p||!confirm(`Remove ${p.name}? Their logged sessions will be kept.`)) return;
+  S.roster=S.roster.filter(r=>r.id!==id);
+  save(); renderRoster(); renderSel(); updateAll(); toast(p.name+' removed');
+}
+function renderRoster(){
+  const g=document.getElementById('roster-grid');
+  if(!(S.roster||[]).length){g.innerHTML='<div style="color:var(--gray2);font-size:13px;grid-column:1/-1;">No players yet.</div>';return;}
+  g.innerHTML=S.roster.map(p=>`<div class="r-card"><span class="r-name">${p.name}</span><button class="r-del" onclick="removePlayer('${p.id}')">✕</button></div>`).join('');
+}
+function changePin(){
+  const np=document.getElementById('new-pin').value;
+  const cp=document.getElementById('confirm-pin').value;
+  if(!np){toast('Enter a new PIN');return;}
+  if(np!==cp){toast("PINs don't match");return;}
+  S.coachPin=np; save();
+  document.getElementById('new-pin').value='';
+  document.getElementById('confirm-pin').value='';
+  toast('PIN updated');
+}
+function confirmReset(){
+  if(!confirm('Reset all scores to zero? History is kept.')) return;
+  if(!S.log) S.log=[];
+  if(!S.resets) S.resets=[];
+  const ts=Date.now();
+  S.log.push({ts,reset:true});
+  S.resets.push(ts);
+  save(); updateAll(); toast('Scores reset — history kept');
+}
+
+// ── EXPORT ─────────────────────────────────────────────────────────────────
+function exportCSV(){
+  const lr=lastReset();
+  const log=(S.log||[]).filter(e=>!e.reset&&e.ts>lr);
+  if(!log.length){toast('No data to export');return;}
+  const rows=[['Date','Player','Shots','Plyo Reps','Stickhandling (min)']];
+  log.forEach(e=>rows.push([e.date||'',e.pname,e.shots||0,e.plyo||0,e.skills||0]));
+  const csv=rows.map(r=>r.map(v=>'"'+v+'"').join(',')).join('\n');
+  const a=document.createElement('a'); a.href='data:text/csv,'+encodeURIComponent(csv);
+  a.download='islanders_u13_training.csv'; a.click();
+}
+
+// ── TABS ───────────────────────────────────────────────────────────────────
+function showTab(id,btn){
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('pane-'+id).classList.add('active'); btn.classList.add('active');
+  if(id==='leaderboard') renderLb();
+  if(id==='charts') setTimeout(renderChart,50);
+  if(id==='settings'&&coachOn) renderRoster();
+}
+
+// ── UTILS ──────────────────────────────────────────────────────────────────
+function updateAll(){ renderHero(); renderLog(); renderSel(); renderLb(); if(document.getElementById('pane-charts').classList.contains('active')) renderChart(); }
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),2600); }
+function closeModal(){ document.getElementById('modal').classList.remove('show'); document.getElementById('overlay').classList.remove('show'); }
+
+// ── INIT ───────────────────────────────────────────────────────────────────
+document.getElementById('input-date').value=new Date().toLocaleDateString('en-CA');
+initFB();
+</script>
+</body>
+</html>
